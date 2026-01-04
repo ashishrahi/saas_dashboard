@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { UserService } from "@/services/userService";
+import { FeatureService } from "@/Services/featureService";
 
-export const useDeleteUser = () => {
+export const useDeleteFeature = () => {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, string>({
-    mutationFn: (id: string) => UserService.delete(id),
+    mutationFn: (id: string) => FeatureService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["features"] });
     },
   });
 };

@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { UserService } from "@/services/userService";
-import { IUser } from "@/types/userTypes";
+import { FeatureService } from "@/Services/featureService";
+import type{ IFeature } from "@/types/IFeatures";
 
-export const useUser = (id: string) => {
-  return useQuery<IUser, Error>({
-    queryKey: ["user", id], 
-    queryFn: () => UserService.getById(id),
+export const useFeature = (id: string) => {
+  return useQuery<IFeature, Error>({
+    queryKey: ["feature", id], 
+    queryFn: () => FeatureService.getById(id),
     staleTime: 1000 * 60 * 5, 
   });
 };

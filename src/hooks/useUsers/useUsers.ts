@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { UserService } from "@/services/userService";
-import { IUser } from "@/types/userTypes";
+import { UserService } from "@/Services/userService";
+import type { IUser } from "@/types/IUser";
 
 export const useUsers = () => {
   return useQuery<IUser[], Error>({
-    queryKey: ["users"], // Unique key for user list
-    queryFn: UserService.getAll, // Fetch all users
-    staleTime: 1000 * 60 * 5, // Optional: 5-minute cache
+    queryKey: ["users"], 
+    queryFn: UserService.getAll, 
+    staleTime: 1000 * 60 * 5, 
   });
 };

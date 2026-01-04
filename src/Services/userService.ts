@@ -1,17 +1,17 @@
 
 import axiosInstance from "../Services/apiClient";
-import { IUser } from "../types/IUser";
+import type { IUser } from "@/types/IUser";
 
 export const UserService = {
   // Fetch all users
   getAll: async (): Promise<IUser[]> => {
-    const response = await axiosInstance.get("/users");
+    const response = await axiosInstance.get("v1/users");
     return response?.data?.data;
   },
 
   // Fetch a single user by ID
   getById: async (id: string): Promise<IUser> => {
-    const response = await axiosInstance.get(`/users/${id}`);
+    const response = await axiosInstance.get(`v1/users/${id}`);
     return response?.data?.data;
   },
 
@@ -55,6 +55,6 @@ export const UserService = {
 
   // Delete a user by ID
   delete: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/users/${id}`);
+    await axiosInstance.delete(`/v1/users/${id}`);
   },
 };

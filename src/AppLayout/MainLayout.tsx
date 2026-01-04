@@ -51,14 +51,12 @@ export default function MainLayout() {
           onToggleCollapse={toggleSidebar}
         />
 
-        <main className="p-4 md:p-6 flex-1 overflow-auto">
-          <div className="max-w-full mx-auto">
+        <main className="p-4 md:p-6 flex-1 overflow-auto h-[calc(100vh-64px)]">
+  <div className="max-w-full mx-auto">
+    <Outlet />
+  </div>
+</main>
 
-
-            <Outlet />
-
-          </div>
-        </main>
       </div>
     </div>
   );
