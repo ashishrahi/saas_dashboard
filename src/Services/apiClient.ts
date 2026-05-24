@@ -2,7 +2,12 @@
 import axios from "axios";
 
 const AUTH_SIGNIN_PATH = "/signin";
-const AUTH_ENDPOINTS = ["/v1/admin/login", "/v1/admin/refresh-token"];
+const AUTH_ENDPOINTS = [
+  "/v1/admin/login",
+  "/v1/admin/register",
+  "/v1/admin/refresh-token",
+  "/v1/admin/logout",
+];
 
 let isRefreshing = false;
 let isRedirecting = false;
@@ -12,10 +17,19 @@ function isAuthEndpoint(url?: string) {
   return AUTH_ENDPOINTS.some((path) => url.includes(path));
 }
 
+function clearAuthStorage() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("tenantId");
+  localStorage.removeItem("auth");
+  localStorage.removeItem("user");
+}
+
 function redirectToSignIn() {
   if (typeof window === "undefined" || isRedirecting) return;
   isRedirecting = true;
-  localStorage.clear();
+  clearAuthStorage();
   window.location.href = AUTH_SIGNIN_PATH;
 }
 

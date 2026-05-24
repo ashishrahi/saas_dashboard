@@ -7,26 +7,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import LogoImage from "@/assets/logo.png"
 
 import { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
 import { toast } from "sonner"
 
 import type { AppDispatch, RootState } from "@/store/store"
-import { loginUser, clearMessage, clearError } from "@/store/AuthSlice"
+import {
+  registerUser,
+  clearMessage,
+  clearError,
+} from "@/store/AuthSlice"
 
-const LOGIN_ERROR_TOAST_ID = "login-error-toast"
-const LOGIN_SUCCESS_TOAST_ID = "login-success-toast"
+const REGISTER_ERROR_TOAST_ID = "register-error-toast"
+const REGISTER_SUCCESS_TOAST_ID = "register-success-toast"
 
-export function LoginForm({
+export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -37,32 +37,26 @@ export function LoginForm({
     (state: RootState) => state.auth
   )
 
-  const [email, setEmail] = useState<string>("")
-  const [password, setPassword] = useState<string>("")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    dispatch(
-      loginUser({
-        email,
-        password,
-      })
-    )
+    dispatch(registerUser({ name, email, password }))
   }
 
- 
   useEffect(() => {
     if (message) {
-      toast.success(message, { id: LOGIN_SUCCESS_TOAST_ID })
-      dispatch(clearMessage()) 
+      toast.success(message, { id: REGISTER_SUCCESS_TOAST_ID })
+      dispatch(clearMessage())
     }
     if (error) {
-      toast.error(error, { id: LOGIN_ERROR_TOAST_ID })
-      dispatch(clearError()) 
+      toast.error(error, { id: REGISTER_ERROR_TOAST_ID })
+      dispatch(clearError())
     }
   }, [message, error, dispatch])
 
- 
   useEffect(() => {
     if (user && token) {
       navigate("/")
@@ -78,15 +72,27 @@ export function LoginForm({
             alt="Logo"
             className="h-42 w-52 object-contain"
           />
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Create an account</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Register your organization to get started
           </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="name">Name</FieldLabel>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </Field>
+
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
@@ -100,38 +106,30 @@ export function LoginForm({
               </Field>
 
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
-
+                <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                 />
               </Field>
 
               <Field>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Logging in..." : "Login"}
+                  {loading ? "Creating account..." : "Register"}
                 </Button>
               </Field>
 
               <p className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
+                Already have an account?{" "}
                 <Link
-                  to="/register"
+                  to="/signin"
                   className="underline underline-offset-4 hover:text-foreground"
                 >
-                  Register
+                  Sign in
                 </Link>
               </p>
             </FieldGroup>

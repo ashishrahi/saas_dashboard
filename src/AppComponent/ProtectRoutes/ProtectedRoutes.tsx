@@ -8,7 +8,13 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
-  const { token, auth, loading } = useSelector((state: RootState) => state.auth);
+  const { token: reduxToken, auth, loading } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  const token =
+    reduxToken ??
+    (typeof window !== "undefined" ? localStorage.getItem("token") : null);
 
   if (loading) {
     return (

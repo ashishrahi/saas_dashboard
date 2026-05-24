@@ -3,6 +3,7 @@ import MainLayout from "@/AppLayout/MainLayout";
 import DashboardPage from "@/Pages/DashboardPage/DashboardPage";
 import UserPage from "@/Pages/UserPage/UserPage";
 import SignInPage from "@/Pages/AuthPage/SignInPage";
+import RegisterPage from "@/Pages/AuthPage/RegisterPage";
 import FeaturesPage from "@/Pages/FeaturePage/FeaturesPage";
 import CategoryPage from "@/Pages/CategoryPage/CategoryPage";
 import SubCategoryPage from "@/Pages/SubCategoryPage/SubCategoryPage";
@@ -22,6 +23,7 @@ export default function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/signin" element={<SignInPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<Navigate to="/signin" replace />} />
 
         {/* Protected routes */}

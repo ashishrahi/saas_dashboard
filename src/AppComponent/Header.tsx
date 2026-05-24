@@ -3,7 +3,7 @@ import { useBreadcrumbs } from "@/lib/navigation/use-breadcrumbs"
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import type { AppDispatch } from "@/store/store"
-import { logout } from "@/store/AuthSlice"
+import { logoutUser } from "@/store/AuthSlice"
 
 export default function Header({
   onToggleMobile,
@@ -17,8 +17,8 @@ export default function Header({
   const breadcrumbs = useBreadcrumbs()
   const title = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Dashboard"
 
-  const handleLogout = () => {
-    dispatch(logout())
+  const handleLogout = async () => {
+    await dispatch(logoutUser())
     navigate("/signin")
   }
 
