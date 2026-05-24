@@ -2,7 +2,8 @@ export interface IFeature{
  _id: string,  
  title?: string,
  description?: string,
- name: string,
-createdAt: Date,
+  createdAt: Date,
+  isActive: boolean, 
+
 updatedAt: Date
  }

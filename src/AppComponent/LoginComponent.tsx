@@ -23,6 +23,9 @@ import { toast } from "sonner"
 import type { AppDispatch, RootState } from "@/store/store"
 import { loginUser, clearMessage, clearError } from "@/store/AuthSlice"
 
+const LOGIN_ERROR_TOAST_ID = "login-error-toast"
+const LOGIN_SUCCESS_TOAST_ID = "login-success-toast"
+
 export function LoginForm({
   className,
   ...props
@@ -50,11 +53,11 @@ export function LoginForm({
  
   useEffect(() => {
     if (message) {
-      toast.success(message)
+      toast.success(message, { id: LOGIN_SUCCESS_TOAST_ID })
       dispatch(clearMessage()) 
     }
     if (error) {
-      toast.error(error)
+      toast.error(error, { id: LOGIN_ERROR_TOAST_ID })
       dispatch(clearError()) 
     }
   }, [message, error, dispatch])

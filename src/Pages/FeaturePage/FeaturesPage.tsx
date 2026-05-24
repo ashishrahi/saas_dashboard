@@ -1,77 +1,171 @@
+"use client";
+
 import { useState } from "react";
 import { AppContainer } from "@/AppComponent/AppContainer";
-import AppHeaderActions from "@/AppComponent/AppHeaderActions";
-import { AppShadCNPagination } from "@/AppComponent/AppShadCNPagination";
 import { AppTable } from "@/AppComponent/AppTable";
-import { columns } from "@/AppComponent/featureColumn";
-import { AppPageSizeSelectorComponent } from "@/AppComponent/AppPageSizeSelector";
-import FilterPanel from "@/AppComponent/AppFilterPanel";
+import { columns } from "@/AppComponent/coulmns/featureColumn";
+import { TablePaginationBar } from "@/components/design-system";
 import { AddFeatureDialog } from "@/AppComponent/AddFeatureDialog";
-import { useFeatures } from "@/hooks/useFeatures/useFeatures";
-
-interface Pagination {
-  page: number;
-  limit: number;
-  totalItems: number;
-  totalPages: number;
-}
-
-
+import { DeleteModal } from "@/AppComponent/DeleteModal";
+import { useDeleteFeature } from "@/hooks/useFeatures/useDeleteFeature";
+import { useFeatureList } from "@/hooks/CustomHook/useFeatureList";
+import type { IFeature } from "@/types/IFeatures";
+import GlobalHeaderWithFilters from "@/AppComponent/GlobalHeaderWithFilters";
 
 const FeaturesPage = () => {
+  // 🔥 ALL LOGIC FROM HOOK
+  const {
+    features,
+    pagination,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+    emptyMessage,
+    emptyDescription,
+
+    filterText,
+    status,
+    startDate,
+    endDate,
+
+    page,
+    setPage,
+    limit,
+    setLimit,
+
+    handleSearchChange,
+    handleStatusChange,
+    handleStartDateChange,
+    handleEndDateChange,
+    handleClear,
+  } = useFeatureList();
+
+  const { mutate: deleteFeature, isPending: isDeleting } = useDeleteFeature();
+
+  // 🔹 UI STATE
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [filterText, setFilterText] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [selectedFeature, setSelectedFeature] = useState<IFeature | undefined>(undefined);
+  const [viewMode, setViewMode] = useState(false);
 
-  const { data, isLoading } = useFeatures(page, limit, {
-    name: filterText,
-  });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [featureToDelete, setFeatureToDelete] = useState<IFeature | undefined>(undefined);
 
-  const features = data?.data || [];
-  const pagination: Pagination = data?.pagination || {
-    page: 1,
-    limit: 10,
-    totalItems: 0,
-    totalPages: 1,
+  const handleAdd = () => {
+    setSelectedFeature(undefined);
+    setViewMode(false);
+    setIsDialogOpen(true);
   };
 
-  const handleDialogClose = () => setIsDialogOpen(false);
+  const handleView = (feature: IFeature) => {
+    setSelectedFeature(feature);
+    setViewMode(true);
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (feature: IFeature) => {
+    setSelectedFeature(feature);
+    setViewMode(false);
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (feature: IFeature) => {
+    if (isDeleting) return;
+    setFeatureToDelete(feature);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    const id = featureToDelete?._id;
+    if (!id || isDeleting) return;
+
+    deleteFeature(id, {
+      onSuccess: () => {
+        setIsDeleteModalOpen(false);
+        setFeatureToDelete(undefined);
+      },
+    });
+  };
+
+  const handleDialogClose = () => {
+    setSelectedFeature(undefined);
+    setIsDialogOpen(false);
+    setViewMode(false);
+  };
 
   return (
     <AppContainer>
-      <div className="p-3 grid gap-6">
-        <AppHeaderActions
-          title="Add Feature"
-          filterText={filterText}
-          setFilterText={setFilterText}
-          searchText="Features"
-          onAddClick={() => setIsDialogOpen(true)}
+      <div className="flex min-h-[70vh] flex-col gap-6">
+
+        {/* ✅ Header + Filters */}
+        <GlobalHeaderWithFilters
+          title="All Features"
+          onAdd={handleAdd}
+          addLabel="+ Add Feature"
+
+          onDownloadCsv={() => console.log("Download CSV")}
+          onDownloadAll={() => console.log("Download All")}
+
+          search={filterText}
+          onSearchChange={handleSearchChange}
+
+          status={status}
+          onStatusChange={handleStatusChange}
+
+          startDate={startDate}
+          onStartDateChange={handleStartDateChange}
+
+          endDate={endDate}
+          onEndDateChange={handleEndDateChange}
+
+          onClear={handleClear}
         />
 
-        <FilterPanel />
-<div className="overflow-auto max-h-[600px]">
-        <AppTable columns={columns} data={features} loading={isLoading} />
-</div>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 px-2 gap-2 sm:gap-0">
-          <AppPageSizeSelectorComponent
-            pageSize={limit}
-            setPageSize={(newLimit: number) => {
-              setLimit(newLimit);
-              setPage(1);
-            }}
-            setCurrentPage={setPage}
-          />
+        {/* Table */}
+        <AppTable
+          columns={columns}
+          data={features}
+          loading={isLoading}
+          error={isError ? error : undefined}
+          onRetry={() => refetch()}
+          isRetrying={isFetching && !isLoading}
+          emptyMessage={emptyMessage}
+          emptyDescription={emptyDescription}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
 
+        <TablePaginationBar
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          pageSize={limit}
+          onPageChange={setPage}
+          onPageSizeChange={setLimit}
+        />
 
-          <AppShadCNPagination
-            currentPage={page}
-            totalPages={pagination.totalPages}
-            onPageChange={(newPage) => setPage(newPage)}
-          />
+        {/* Dialog */}
+        <AddFeatureDialog
+          isOpen={isDialogOpen}
+          featureToEdit={selectedFeature}
+          viewMode={viewMode}
+          onClose={handleDialogClose}
+        />
 
-          <AddFeatureDialog isOpen={isDialogOpen} onClose={handleDialogClose} />
-        </div>
+        {/* Delete Modal */}
+        <DeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={(open) => {
+            if (!open && !isDeleting) {
+              setIsDeleteModalOpen(false);
+              setFeatureToDelete(undefined);
+            }
+          }}
+          onConfirm={handleDeleteConfirm}
+          isDeleting={isDeleting}
+          featureTitle={featureToDelete?.title}
+        />
       </div>
     </AppContainer>
   );

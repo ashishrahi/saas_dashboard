@@ -1,60 +1,83 @@
-
 import axiosInstance from "../Services/apiClient";
 import type { IUser } from "@/types/IUser";
+import type { ApiResponse } from "@/types/ApiResponse";
+import type { CreateUserPayload, UpdateUserPayload } from "@/types/UserPayload";
 
 export const UserService = {
-  // Fetch all users
-  getAll: async (): Promise<IUser[]> => {
-    const response = await axiosInstance.get("v1/users");
-    return response?.data?.data;
+  // helper add (common header)
+  getAuthConfig: () => {
+    const token = localStorage.getItem("token");
+
+    return token
+      ? {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : {}; // FIX (empty string nahi bhejna)
   },
 
-  // Fetch a single user by ID
-  getById: async (id: string): Promise<IUser> => {
-    const response = await axiosInstance.get(`v1/users/${id}`);
-    return response?.data?.data;
+  //  Get All
+  getAll: async (): Promise<ApiResponse<IUser[]>> => {
+    const response = await axiosInstance.get<ApiResponse<IUser[]>>(
+      "/v1/users",
+      UserService.getAuthConfig()
+    );
+    return response.data;
   },
 
-  // Create a new user (supports file upload)
-  create: async (user: Omit<IUser, "_id" | "profileImage"> & { profileImage?: File }) => {
-    const formData = new FormData();
+  // Get By Id
+  getById: async (id: string): Promise<ApiResponse<IUser>> => {
+    const response = await axiosInstance.get<ApiResponse<IUser>>(
+      `/v1/users/${id}`,
+      UserService.getAuthConfig()
+    );
+    return response.data;
+  },
 
-    formData.append("name", user.name ?? "");
-    formData.append("email", user.email ?? "");
-    formData.append("role", user.role ?? "");
+  // Create
+  create: async (
+    payload: CreateUserPayload | FormData
+  ): Promise<ApiResponse<IUser>> => {
+    const response = await axiosInstance.post<ApiResponse<IUser>>(
+      "/v1/users",
+      payload,
+      UserService.getAuthConfig()
+    );
+    return response.data;
+  },
 
-    if (user.profileImage) {
-      formData.append("profileImage", user.profileImage);
+  // Update
+  update: async (
+    payload: UpdateUserPayload | FormData
+  ): Promise<ApiResponse<IUser>> => {
+    const id =
+      payload instanceof FormData
+        ? (payload.get("_id") as string) // FIX (type cast)
+        : payload._id;
+
+    if (!id) {
+      throw new Error("User ID is required"); // safety
     }
 
-    const response = await axiosInstance.post("/users", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    return response?.data;
+    const response = await axiosInstance.put<ApiResponse<IUser>>(
+      `/v1/users/${id}`,
+      payload,
+      UserService.getAuthConfig()
+    );
+    return response.data;
   },
 
-  // Update an existing user (supports file upload)
-  update: async (user: IUser & { profileImage?: File }) => {
-    const formData = new FormData();
-
-    formData.append("name", user.name ?? "");
-    formData.append("email", user.email ?? "");
-    formData.append("role", user.role ?? "");
-
-    if (user.profileImage) {
-      formData.append("profileImage", user.profileImage);
+  // Delete
+  delete: async (id: string): Promise<ApiResponse<IUser>> => {
+    if (!id) {
+      throw new Error("User ID is required"); // safety
     }
 
-    const response = await axiosInstance.put(`/users/${user._id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    return response?.data;
-  },
-
-  // Delete a user by ID
-  delete: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/v1/users/${id}`);
+    const response = await axiosInstance.delete<ApiResponse<IUser>>(
+      `/v1/users/${id}`,
+      UserService.getAuthConfig()
+    );
+    return response.data;
   },
 };

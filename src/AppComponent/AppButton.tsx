@@ -1,8 +1,7 @@
-// AppButton.tsx
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 
-type CustomVariant = "primary" | "secondary" | "outline";
+type CustomVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 
 interface AppButtonProps extends Omit<React.ComponentProps<typeof Button>, "variant"> {
   children: React.ReactNode;
@@ -10,11 +9,12 @@ interface AppButtonProps extends Omit<React.ComponentProps<typeof Button>, "vari
   className?: string;
 }
 
-// Map custom variants to shadcn variants
 const variantMap: Record<CustomVariant, NonNullable<React.ComponentProps<typeof Button>["variant"]>> = {
-  primary: "default",       // 'primary' maps to shadcn 'default'
+  primary: "default",
   secondary: "secondary",
   outline: "outline",
+  ghost: "ghost",
+  danger: "destructive",
 };
 
 export const AppButton: React.FC<AppButtonProps> = ({
@@ -24,11 +24,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
   ...props
 }) => {
   return (
-    <Button
-      variant={variantMap[variant]} // Type-safe mapping
-      className={className}
-      {...props}
-    >
+    <Button variant={variantMap[variant]} className={className} {...props}>
       {children}
     </Button>
   );

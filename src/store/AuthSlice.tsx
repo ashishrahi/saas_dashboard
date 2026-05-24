@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axiosInstance from "@/Services/apiClient"
-import { AxiosError } from "axios"
 import type {PayloadAction} from "@reduxjs/toolkit"
+import { safeParseJson } from "@/utilities/safeStorage"
+import { getApiErrorMessage } from "@/utilities/apiError"
 
 // ===== Types =====
 export interface IAuth {
@@ -52,11 +53,11 @@ const initialState: IAuthState = {
     typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null,
   auth:
     typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("auth") || "null")
+      ? safeParseJson<IAuth | null>(localStorage.getItem("auth"), null)
       : null,
   user:
     typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("user") || "null")
+      ? safeParseJson<IUserProfile | null>(localStorage.getItem("user"), null)
       : null,
   loading: false,
   error: null,
@@ -79,13 +80,7 @@ export const loginUser = createAsyncThunk<
       success: response.data.success,
     }
   } catch (err: unknown) {
-    let message = "Login failed"
-    if (err instanceof AxiosError) {
-      message = err.response?.data?.message || message
-    } else if (err instanceof Error) {
-      message = err.message
-    }
-    return rejectWithValue(message)
+    return rejectWithValue(getApiErrorMessage(err, "Login failed"))
   }
 })
 

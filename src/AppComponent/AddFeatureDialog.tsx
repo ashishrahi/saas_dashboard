@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -11,15 +13,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-
-import { XCircle, Tag, Edit3 } from "lucide-react";
+import { XCircle, Tag, Edit3, Eye } from "lucide-react";
 
 import type { IFeature } from "@/types/IFeatures";
+import { useAddFeature } from "@/hooks/useFeatures/useAddFeatures";
+import { useUpdateFeature } from "@/hooks/useFeatures/useUpdateFeature";
 
 interface AddFeatureDialogProps {
   isOpen: boolean;
   onClose: () => void;
   featureToEdit?: IFeature;
+  viewMode?: boolean; 
 }
 
 interface FeatureFormData {
@@ -31,7 +35,13 @@ export function AddFeatureDialog({
   isOpen,
   onClose,
   featureToEdit,
+  viewMode = false,
 }: AddFeatureDialogProps) {
+  // React Query mutations
+  const { mutate: addFeature, isPending: isAdding } = useAddFeature();
+  const { mutate: updateFeature, isPending: isUpdating } = useUpdateFeature();
+
+  // React Hook Form
   const {
     register,
     handleSubmit,
@@ -39,10 +49,12 @@ export function AddFeatureDialog({
     formState: { errors },
   } = useForm<FeatureFormData>();
 
+  // Reset form
   const resetForm = useCallback(() => {
     reset({ title: "", description: "" });
   }, [reset]);
 
+  // Populate form when editing, viewing, or when dialog opens
   useEffect(() => {
     if (!isOpen) {
       resetForm();
@@ -51,32 +63,65 @@ export function AddFeatureDialog({
 
     if (featureToEdit) {
       reset({
-        title: featureToEdit?.title ?? "",
-        description: featureToEdit?.description ?? "",
+        title: featureToEdit.title ?? "",
+        description: featureToEdit.description ?? "",
       });
     } else {
       resetForm();
     }
   }, [isOpen, featureToEdit, reset, resetForm]);
 
+  // Submit handler
   const onSubmit = (data: FeatureFormData) => {
-    console.log("Form submitted:", data);
-    onClose();
+    if (viewMode) return; 
+
+    if (featureToEdit) {
+      // Edit existing feature
+      const payload: IFeature = {
+        ...featureToEdit,
+        title: data.title,
+        description: data.description ?? "",
+        updatedAt: new Date(),
+      };
+
+      updateFeature(payload, {
+        onSuccess: () => {
+          onClose();
+          resetForm();
+        },
+      });
+    } else {
+      // Add new feature
+      const payload: Omit<IFeature, "_id"> = {
+        title: data.title,
+        description: data.description ?? "",
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      addFeature(payload, {
+        onSuccess: () => {
+          onClose();
+          resetForm();
+        },
+      });
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[80vh] overflow-y-auto">
-        <DialogHeader className="border-b py-3">
-          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+      <DialogContent className="sm:max-w-xl">
+        <DialogHeader className="border-divider border-b pb-4">
+          <DialogTitle className="flex items-center gap-2">
             {featureToEdit ? (
               <>
-                <Edit3 size={20} className="text-blue-600" />
-                Edit Feature
+                {viewMode ? <Eye size={20} className="text-primary" /> : <Edit3 size={20} className="text-primary" />}
+                {viewMode ? "View Feature" : "Edit Feature"}
               </>
             ) : (
               <>
-                <Tag size={20} className="text-blue-600" />
+                <Tag size={20} className="text-primary" />
                 Add Feature
               </>
             )}
@@ -97,9 +142,10 @@ export function AddFeatureDialog({
                 required: "Feature title is required",
                 minLength: { value: 2, message: "Minimum 2 characters" },
               })}
+              disabled={viewMode} // ✅ readonly in view
             />
             {errors.title && (
-              <p className="text-red-500 text-xs">{errors.title.message}</p>
+              <p className="text-destructive text-xs">{errors.title.message}</p>
             )}
           </div>
 
@@ -110,18 +156,31 @@ export function AddFeatureDialog({
               placeholder="Description..."
               {...register("description")}
               className="resize-none h-24"
+              disabled={viewMode} // ✅ readonly in view
             />
           </div>
 
           {/* Actions */}
-          <DialogFooter className="md:col-span-2 flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={onClose}>
-              <XCircle size={16} /> Cancel
+          <DialogFooter className="border-divider md:col-span-2 flex justify-end gap-3 border-t pt-4">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              disabled={isAdding || isUpdating}
+            >
+              <XCircle size={16} /> {viewMode ? "Close" : "Cancel"}
             </Button>
 
-            <Button type="submit">
-              {featureToEdit ? "Update Feature" : "Add Feature"}
-            </Button>
+            {!viewMode && (
+              <Button type="submit" disabled={isAdding || isUpdating}>
+                {featureToEdit
+                  ? isUpdating
+                    ? "Updating..."
+                    : "Update Feature"
+                  : isAdding
+                  ? "Adding..."
+                  : "Add Feature"}
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

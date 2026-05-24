@@ -3,7 +3,6 @@ import type { Column } from "@/AppComponent/AppTable";
 
 export const columns: Column<IFeature>[] = [
     { key: "title", label: "Title" },
-    { key: "name", label: "name" },
     { key: "description", label: "Description" },
    
     {

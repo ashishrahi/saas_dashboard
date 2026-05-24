@@ -1,3 +1,4 @@
+import type { ApiResponse } from "@/types/ApiResponse";
 import axiosInstance from "../Services/apiClient";
 import type { IFeature } from "@/types/IFeatures";
 
@@ -16,7 +17,7 @@ export interface FeaturesApiResponse {
 }
 
 export const FeatureService = {
-  // Fetch all features with pagination & optional filters
+  // Fetch all features
   getAll: async (params?: {
     page?: number;
     limit?: number;
@@ -25,33 +26,46 @@ export const FeatureService = {
     description?: string;
     isActive?: boolean;
   }): Promise<FeaturesApiResponse> => {
-    const response = await axiosInstance.get<FeaturesApiResponse>("/v1/features", { params });
+    const response = await axiosInstance.get<FeaturesApiResponse>(
+      "/v1/features",
+      { params },
+    );
     return response.data;
   },
 
-  // Fetch a single feature by ID
-  getById: async (id: string): Promise<IFeature> => {
-    const response = await axiosInstance.get<{ data: IFeature }>(`/v1/features/${id}`);
-    return response.data.data;
-  },
-
-  // Create a new feature
-  create: async (feature: Omit<IFeature, "_id">): Promise<IFeature> => {
-    const response = await axiosInstance.post<{ data: IFeature }>("/v1/features", feature);
-    return response.data.data;
-  },
-
-  // Update an existing feature
-  update: async (feature: IFeature): Promise<IFeature> => {
-    const response = await axiosInstance.put<{ data: IFeature }>(
-      `/v1/features/${feature._id}`,
-      feature
+  // Fetch single
+  getById: async (id: string): Promise<ApiResponse<IFeature>> => {
+    const response = await axiosInstance.get<ApiResponse<IFeature>>(
+      `/v1/features/${id}`,
     );
-    return response.data.data;
+    return response.data;
   },
 
-  // Delete a feature by ID
-  delete: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/v1/features/${id}`);
+  // Create
+  create: async (
+    feature: Omit<IFeature, "_id">,
+  ): Promise<ApiResponse<IFeature>> => {
+    const response = await axiosInstance.post<ApiResponse<IFeature>>(
+      "/v1/features",
+      feature,
+    );
+    return response.data;
+  },
+
+  // Update FIXED
+  update: async (feature: IFeature): Promise<ApiResponse<IFeature>> => {
+    const response = await axiosInstance.put<ApiResponse<IFeature>>(
+      `/v1/features/${feature._id}`,
+      feature,
+    );
+    return response.data;
+  },
+
+  // Delete FIXED
+  delete: async (id: string): Promise<ApiResponse<IFeature>> => {
+    const response = await axiosInstance.delete<ApiResponse<IFeature>>(
+      `/v1/features/${id}`,
+    );
+    return response.data;
   },
 };

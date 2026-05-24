@@ -1,5 +1,15 @@
 import React, { useState } from "react";
 import { Filter, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FilterValues {
   name: string;
@@ -13,7 +23,7 @@ interface FilterPanelProps {
 }
 
 const roles = ["Admin", "Editor", "User"];
-const status = ["Active", "Inactive", "Pending"];
+const statusOptions = ["Active", "Inactive", "Pending"];
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ onFilterChange }) => {
   const [showFilter, setShowFilter] = useState(false);
@@ -41,92 +51,87 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onFilterChange }) => {
   };
 
   return (
-    <div className="mb-4 relative w-full max-w-md">
-      {/* Filter Button */}
+    <div className="relative mb-4 w-full max-w-md">
       <div className="flex justify-end">
-        <button
-          onClick={toggleFilter}
-          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm transition-colors"
-        >
-          {showFilter ? <X size={18} /> : <Filter size={18} />}
+        <Button variant="secondary" size="sm" onClick={toggleFilter}>
+          {showFilter ? <X className="size-4" /> : <Filter className="size-4" />}
           {showFilter ? "Close Filters" : "Filters"}
-        </button>
+        </Button>
       </div>
 
-      {/* Filter Panel */}
       {showFilter && (
-        <div className="absolute right-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg p-5 z-50 overflow-y-auto max-h-[400px]">
-          <h4 className="text-lg font-semibold mb-4 text-gray-700">Filters</h4>
+        <div className="bg-card border-border absolute right-0 z-50 mt-2 max-h-[400px] w-full overflow-y-auto rounded-[14px] border p-5 shadow-dropdown">
+          <h4 className="text-heading mb-4 text-lg font-semibold">Filters</h4>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-600 mb-1">Name</label>
-              <input
-                type="text"
+            <div className="flex flex-col gap-1.5">
+              <Label>Name</Label>
+              <Input
                 placeholder="Enter name"
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                 value={filters.name}
                 onChange={(e) => handleChange("name", e.target.value)}
               />
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-600 mb-1">Email</label>
-              <input
-                type="text"
+            <div className="flex flex-col gap-1.5">
+              <Label>Email</Label>
+              <Input
                 placeholder="Enter email"
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                 value={filters.email}
                 onChange={(e) => handleChange("email", e.target.value)}
               />
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-600 mb-1">Role</label>
-              <select
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                value={filters.role}
-                onChange={(e) => handleChange("role", e.target.value)}
+            <div className="flex flex-col gap-1.5">
+              <Label>Role</Label>
+              <Select
+                value={filters.role || "all"}
+                onValueChange={(value) =>
+                  handleChange("role", value === "all" ? "" : value)
+                }
               >
-                <option value="">Select Role</option>
-                {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Select Role</SelectItem>
+                  {roles.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-600 mb-1">Status</label>
-              <select
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                value={filters.status}
-                onChange={(e) => handleChange("status", e.target.value)}
+            <div className="flex flex-col gap-1.5">
+              <Label>Status</Label>
+              <Select
+                value={filters.status || "all"}
+                onValueChange={(value) =>
+                  handleChange("status", value === "all" ? "" : value)
+                }
               >
-                <option value="">Select Status</option>
-                {status.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Select Status</SelectItem>
+                  {statusOptions.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <div className="flex justify-between mt-4">
-            <button
-              onClick={resetFilters}
-              className="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg shadow hover:bg-gray-300 transition"
-            >
+          <div className="mt-4 flex justify-between gap-3">
+            <Button variant="outline" onClick={resetFilters}>
               Reset
-            </button>
-            <button
-              onClick={applyFilters}
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-            >
-              Apply
-            </button>
+            </Button>
+            <Button onClick={applyFilters}>Apply</Button>
           </div>
         </div>
       )}

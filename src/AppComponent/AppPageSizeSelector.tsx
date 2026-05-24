@@ -1,36 +1,56 @@
-import React from "react";
+/**
+ * @deprecated Use `TablePaginationBar` from `@/components/design-system` instead.
+ */
+import { Panel } from "@/components/design-system/panel"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
-interface PageSizeSelectorProps {
+interface AppPageSizeSelectorProps {
   pageSize: number;
   setPageSize: (size: number) => void;
   setCurrentPage: (page: number) => void;
+  options?: number[];
+  className?: string;
 }
 
-export const AppPageSizeSelectorComponent: React.FC<PageSizeSelectorProps> = ({
+/** @deprecated Use TablePaginationBar from @/components/design-system */
+export const AppPageSizeSelector = ({
   pageSize,
   setPageSize,
   setCurrentPage,
-}) => {
+  options = [5, 10, 20, 50],
+  className,
+}: AppPageSizeSelectorProps) => {
   return (
-    <div className="flex justify-end items-center gap-2 p-2 bg-secondary rounded-md shadow-sm">
-      <label htmlFor="pageSize" className="text-sm font-medium text-gray-700">
-        Rows per page:
-      </label>
-      <select
-        id="pageSize"
-        className="border border-gray-400 rounded-md px-2 py-1 text-sm bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        value={pageSize}
-        onChange={(e) => {
-          setPageSize(Number(e.target.value));
+    <Panel className={cn("flex w-fit items-center gap-3", className)} padding="sm">
+      <span className="text-muted-foreground text-sm">Rows per page</span>
+      <Select
+        value={String(pageSize)}
+        onValueChange={(val) => {
+          setPageSize(Number(val));
           setCurrentPage(1);
         }}
       >
-        {[5, 10, 20, 50].map((size) => (
-          <option key={size} value={size}>
-            {size}
-          </option>
-        ))}
-      </select>
-    </div>
+        <SelectTrigger className="w-[80px]" size="sm">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((opt) => (
+            <SelectItem key={opt} value={String(opt)}>
+              {opt}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </Panel>
   );
 };
+
+/** @deprecated Use TablePaginationBar from @/components/design-system */
+export const AppPageSizeSelectorComponent = AppPageSizeSelector;
